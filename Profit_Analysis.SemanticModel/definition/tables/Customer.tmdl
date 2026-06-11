@@ -1,0 +1,51 @@
+table Customer
+	lineageTag: 34880f67-6413-4734-921e-8cabeae41405
+
+	column 'Customer Name'
+		dataType: string
+		lineageTag: 8841df25-b91c-44fb-bf0e-ead6c0cdf834
+		summarizeBy: none
+		sourceColumn: Customer Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Segment
+		dataType: string
+		lineageTag: d67e36f6-efa7-4fef-a090-9be095e760ba
+		summarizeBy: none
+		sourceColumn: Segment
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer ID'
+		dataType: int64
+		isHidden
+		lineageTag: 4868e8c7-7665-4bfe-852e-fa4280b9a09a
+		summarizeBy: none
+		sourceColumn: Customer ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition Customer-bb007cab-d5be-42dc-8f27-f06cf3fe7bd0 = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("DESKTOP-LVRLFVF\SQLEXPRESS"),
+				    SalesAnalysis = Source{[Name="SalesAnalysis"]}[Data],
+				    dbo_Customer = SalesAnalysis{[Schema="dbo",Item="Customer"]}[Data],
+				    #"Renamed Columns" = Table.RenameColumns(dbo_Customer,{{"Name", "Customer Name"}}),
+				    #"Filtered Rows" = Table.SelectRows(#"Renamed Columns", each ([Internal] = false)),
+				    #"Removed Columns" = Table.RemoveColumns(#"Filtered Rows",{"Internal"}),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Removed Columns",{{"ID", "Customer ID"}}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Renamed Columns1",{{"Customer ID", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

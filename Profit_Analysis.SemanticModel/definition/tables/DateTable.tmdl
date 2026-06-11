@@ -1,0 +1,73 @@
+table DateTable
+	lineageTag: c11ddb85-27ee-42d2-af3a-650fc6d24b7e
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: General Date
+		lineageTag: f00f6f59-fc52-4a91-936b-38de0d12690c
+		summarizeBy: none
+		sourceColumn: Date
+		sortByColumn: Month
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 1ecc8261-6b9d-4cf4-99ba-919e862e2874
+		summarizeBy: none
+		sourceColumn: Year
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = User
+
+	column 'Month Name'
+		dataType: string
+		lineageTag: 0cc2d15c-9e8d-4243-8ec2-ab146b87638b
+		summarizeBy: none
+		sourceColumn: Month Name
+		sortByColumn: Month
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month
+		dataType: int64
+		formatString: 0
+		lineageTag: 9e8bc021-aee2-43e5-bdca-ae75194a9739
+		summarizeBy: none
+		sourceColumn: Month
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = User
+
+	column Quarter
+		dataType: int64
+		formatString: 0
+		lineageTag: ca808a2c-a7c3-4a85-912c-939f143dc2c9
+		summarizeBy: none
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = User
+
+	partition DateTable-def75be2-1d50-4ba3-b5e1-5f70dcdc5bff = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("C:\Users\ReshuGoyal\OneDrive - CloudThat\Desktop\CloudThat\SampleData\Sample SalesData.xlsx"), null, true),
+				    DateTable_Table = Source{[Item="DateTable",Kind="Table"]}[Data],
+				    #"Changed Type" = Table.TransformColumnTypes(DateTable_Table,{{"Date", type datetime}, {"Year", Int64.Type}, {"Month Name", type text}, {"Month", Int64.Type}, {"Quarter", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

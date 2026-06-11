@@ -1,0 +1,89 @@
+table Products
+	lineageTag: 58faa33e-ce95-49ff-acae-d903df8f2785
+
+	column 'Product Name'
+		dataType: string
+		lineageTag: 8666d82c-3d43-44e6-a5b1-b6a4f4731de3
+		summarizeBy: none
+		sourceColumn: Product Name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Category
+		dataType: string
+		lineageTag: 203ceff4-f96e-46ad-ae22-f9186cc67f36
+		summarizeBy: none
+		sourceColumn: Category
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sub-Category
+		dataType: string
+		lineageTag: 31760a4b-9517-4063-b44e-11e1ff467fe0
+		summarizeBy: none
+		sourceColumn: Sub-Category
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product ID'
+		dataType: int64
+		isHidden
+		lineageTag: e1b66a34-df27-4158-9f66-265cd7cc5905
+		summarizeBy: none
+		sourceColumn: Product ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Priority
+		dataType: string
+		lineageTag: e77973b4-d4af-4323-a60d-ddd46842bb58
+		summarizeBy: none
+		sourceColumn: Priority
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy 'Product Hierarchy'
+		lineageTag: c67b217d-ecaa-4ba6-befc-0e4cd45bfc76
+
+		level Category
+			lineageTag: a0d93051-a11f-4c54-a9f1-ce6ba4ffeeca
+			column: Category
+
+		level Sub-Category
+			lineageTag: 4b01def1-ca75-4f76-b3bb-8efc097217ea
+			column: Sub-Category
+
+		level 'Product Name'
+			lineageTag: e9e13a05-ca52-4ec5-b0e8-16b413a3885f
+			column: 'Product Name'
+
+	partition Products-c6dffbfa-d5c3-4601-9aa3-8bd70895b7cd = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("DESKTOP-LVRLFVF\SQLEXPRESS"),
+				    SalesAnalysis = Source{[Name="SalesAnalysis"]}[Data],
+				    dbo_Products = SalesAnalysis{[Schema="dbo",Item="Products"]}[Data],
+				    #"Renamed Columns" = Table.RenameColumns(dbo_Products,{{"Name", "Product Name"}, {"ID", "Product ID"}}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Renamed Columns",{{"Product ID", Int64.Type}}),
+				    #"Merged Queries" = Table.NestedJoin(#"Changed Type", {"Sub-Category"}, Priorities, {"Product Sub-Category"}, "Priorities", JoinKind.LeftOuter),
+				    #"Expanded Priorities" = Table.ExpandTableColumn(#"Merged Queries", "Priorities", {"Priority"}, {"Priority"})
+				in
+				    #"Expanded Priorities"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

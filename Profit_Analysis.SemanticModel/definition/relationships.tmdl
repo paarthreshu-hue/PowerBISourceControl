@@ -1,0 +1,17 @@
+relationship e5ab393f-dfe9-4a37-a195-e4f661776b5f
+	fromColumn: Sales.'Customer ID'
+	toColumn: Customer.'Customer ID'
+
+relationship 97e51f68-c143-45c2-98d7-140fe897f297
+	fromColumn: Sales.'Product ID'
+	toColumn: Products.'Product ID'
+
+relationship 80528cce-f8b8-40ef-9c0c-96733f534842
+	fromColumn: Sales.'Order Date'
+	toColumn: DateTable.Date
+
+relationship b01617c5-4bd0-4022-8df2-67dc529abd40
+	isActive: false
+	fromColumn: Sales.'Ship Date'
+	toColumn: DateTable.Date
+

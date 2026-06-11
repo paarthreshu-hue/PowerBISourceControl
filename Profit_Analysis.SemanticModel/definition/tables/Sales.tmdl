@@ -1,0 +1,293 @@
+table Sales
+	lineageTag: ff18aa9d-096e-4df1-a659-92650979adcc
+
+	measure 'Profit Measure' =
+			
+			SUM('Sales'[Sales]) - SUM('Sales'[Cost])
+		formatString: "₹"\ #,0.00;#,0.00\ -"₹";"₹"\ #,0.00
+		displayFolder: Measures
+		lineageTag: b2704ca2-6f8e-4e42-9191-bb20b8a534af
+
+		extendedProperty MeasureTemplate =
+				{
+				  "version": 0,
+				  "daxTemplateName": "MathematicalSubtraction"
+				}
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"currencyCulture":"ta-IN"}
+
+	measure 'Total Sales' = sum(Sales[Sales])
+		displayFolder: Measures
+		lineageTag: 6ea5f40b-8027-4b84-8410-c6d805d5be54
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Average Sales' = AVERAGE(Sales[Sales])
+		displayFolder: Measures
+		lineageTag: bb543b1f-8e29-4a53-a33c-63f39cbfe124
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Count of orders' = DISTINCTCOUNT(Sales[Order ID])
+		formatString: 0
+		displayFolder: Measures
+		lineageTag: 6fcb9f99-0b15-4ea5-bf12-07d82b98dda1
+
+	measure 'PY Sales' =
+			if([Total Sales]=blank(),
+			     blank(),
+			
+			    CALCULATE([Total Sales],PREVIOUSYEAR(DateTable[Date])))
+		displayFolder: Measures
+		lineageTag: f1e63be1-7a02-42df-a8a5-ec4dce9a8041
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Fur Sales' = CALCULATE([Total Sales],Products[Category]="Furniture")
+		displayFolder: Measures
+		lineageTag: dac44143-09e9-432d-b6bc-66c3283963f1
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Prev Month Sales' = CALCULATE([Total Sales],PREVIOUSMONTH(DateTable[Date]))
+		displayFolder: Measures
+		lineageTag: d0d6b2d0-b954-4676-a748-e22cf5aeda6e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Last Year' = CALCULATE([Total Sales],SAMEPERIODLASTYEAR(DateTable[Date]))
+		displayFolder: Measures
+		lineageTag: 305bdade-21fd-4fd1-b780-3788105e8d63
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Sales_Filter' = CALCULATE([Total Sales],REMOVEFILTERS(Products[Category]))
+		displayFolder: Measures
+		lineageTag: d6318cfe-cd35-4327-9883-4549a5aa5687
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Per Category' = DIVIDE([Total Sales],[Total Sales_Filter])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Measures
+		lineageTag: f4ca0165-7d06-43dc-87be-be7933551ac9
+
+		changedProperty = FormatString
+
+	measure 'Change PY' = if(ISINSCOPE(DateTable[Year])=true(),[Total Sales]-[PY Sales],blank())
+		displayFolder: Measures
+		lineageTag: 46f57657-dc2c-4713-b7ec-55da794b93ab
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '% Change' = DIVIDE([Change PY],[PY Sales])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Measures
+		lineageTag: 6f8d10eb-8939-43b5-972d-58cb6cc98ce0
+
+		changedProperty = FormatString
+
+	measure 'YTD Sales' = CALCULATE([Total Sales], DATESYTD(DateTable[Date]))
+		displayFolder: Measures
+		lineageTag: b7d9376b-dba3-4406-be7b-b1bce0fc98cf
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure profit_cal =
+			
+			if(sum(Sales[Sales])>45000,sum(Sales[Sales])+sum(Sales[Sales])*.10,sum(Sales[Sales]))
+		displayFolder: Measures
+		lineageTag: 17d449d1-1417-4dbc-809e-a491351b08e6
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure profit_var =
+			
+			var s=sum(Sales[Sales])
+			RETURN
+			if(s>45000, s+s*.10,s)
+		displayFolder: Measures
+		lineageTag: 747e1953-08b2-4365-8479-efd98ba28e3d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'cummulative sales' =
+			
+			var maxdate=max(DateTable[Date])
+			return
+			CALCULATE([Total Sales],DateTable[Date]<=maxdate)
+		displayFolder: Measures
+		lineageTag: 322cc191-2d62-49f7-9f16-f1f742454e1d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Moving Total' = CALCULATE([Total Sales],DATESINPERIOD(DateTable[Date],MIN(DateTable[Date]),-3,day))
+		displayFolder: Measures
+		lineageTag: ab770580-36d7-4353-981b-91cb594544a6
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure userelationship = CALCULATE(Sales[Total Sales],USERELATIONSHIP(DateTable[Date],Sales[Ship Date]))
+		lineageTag: 2acce164-663a-4e85-a0e7-1034208823ee
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Last Year Profit' = CALCULATE([Profit Measure],PREVIOUSYEAR(DateTable[Date]))
+		lineageTag: 8f1a8aaf-2634-41dd-a709-edd8e1d321c7
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Order ID'
+		dataType: string
+		lineageTag: d622ffcd-c7b0-426b-b26b-90e05b74d892
+		summarizeBy: none
+		sourceColumn: Order ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sales
+		dataType: double
+		formatString: "₹"\ #,0.00;#,0.00\ -"₹";"₹"\ #,0.00
+		displayFolder: Metrics
+		lineageTag: 39ea359a-ab6e-4eab-84b2-90b21536636d
+		summarizeBy: sum
+		sourceColumn: Sales
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"ta-IN"}
+
+	column Profit
+		dataType: double
+		formatString: "₹"\ #,0.00;#,0.00\ -"₹";"₹"\ #,0.00
+		displayFolder: Metrics
+		lineageTag: a31f5f72-ce60-4e48-8067-9be906998bc2
+		summarizeBy: sum
+		sourceColumn: Profit
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"ta-IN"}
+
+	column Cost
+		dataType: double
+		formatString: "₹"\ #,0.00;#,0.00\ -"₹";"₹"\ #,0.00
+		displayFolder: Metrics
+		lineageTag: 8d1e2205-a07e-47e8-be35-37c840ce42df
+		summarizeBy: sum
+		sourceColumn: Cost
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"ta-IN"}
+
+	column Quantity
+		dataType: double
+		formatString: 0
+		displayFolder: Metrics
+		lineageTag: ec9276f6-1895-41a6-a2e2-24d78e8a2c05
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	column 'Order Date'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 56c8a0e5-9bd1-4c92-8008-248df9955e2b
+		summarizeBy: none
+		sourceColumn: Order Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Country
+		dataType: string
+		lineageTag: 1053dd24-7eb2-4a1f-a385-ed5d244603c5
+		dataCategory: County
+		summarizeBy: none
+		sourceColumn: Country
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ship Mode'
+		dataType: string
+		lineageTag: a11a43f8-467c-4953-b849-2e2f1fe39007
+		summarizeBy: none
+		sourceColumn: Ship Mode
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ship Date'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 8065746b-3dc5-4207-9c5a-3f3e6fd9ae8c
+		summarizeBy: none
+		sourceColumn: Ship Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Customer ID'
+		dataType: int64
+		isHidden
+		lineageTag: 09dda89a-07c4-4347-b174-c151579baeb2
+		summarizeBy: none
+		sourceColumn: Customer ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Product ID'
+		dataType: int64
+		isHidden
+		lineageTag: c9956806-24db-4c26-b491-33ddcaed6c7c
+		summarizeBy: none
+		sourceColumn: Product ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Sales type' = if(Sales[Country]="Austria","Internal","Export")
+		lineageTag: 1fb2ed27-38a4-4c53-8890-db5e01ed968f
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Sales-20b33717-e983-4952-aa56-dc67fcc2656e = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("DESKTOP-LVRLFVF\SQLEXPRESS"),
+				    SalesAnalysis = Source{[Name="SalesAnalysis"]}[Data],
+				    dbo_Sales = SalesAnalysis{[Schema="dbo",Item="Sales"]}[Data],
+				    #"Replaced Value" = Table.ReplaceValue(dbo_Sales,null,0,Replacer.ReplaceValue,{"Sales", "Profit", "Cost", "Quantity"}),
+				    #"Removed Other Columns" = Table.SelectColumns(#"Replaced Value",{"Order ID", "Sales", "Profit", "Cost", "Quantity", "Order Date", "Country", "Ship Mode", "Ship Date", "Customer ID", "Product ID"}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Removed Other Columns",{{"Order Date", type date}, {"Ship Date", type date}, {"Customer ID", Int64.Type}, {"Product ID", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

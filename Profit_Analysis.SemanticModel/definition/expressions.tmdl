@@ -1,0 +1,14 @@
+expression Priorities =
+		let
+		    Source = Excel.Workbook(File.Contents("C:\Users\ReshuGoyal\OneDrive - CloudThat\Desktop\CloudThat\SampleData\Priorities.xlsx"), null, true),
+		    Priorities_Table = Source{[Item="Priorities",Kind="Table"]}[Data],
+		    #"Changed Type" = Table.TransformColumnTypes(Priorities_Table,{{"Product Sub-Category", type text}, {"Priority", type text}}),
+		    #"Replaced Value" = Table.ReplaceValue(#"Changed Type",null,"Low",Replacer.ReplaceValue,{"Priority"})
+		in
+		    #"Replaced Value"
+	lineageTag: efa83747-9cf9-46c1-ac93-d637a0dcdb70
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
